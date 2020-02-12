@@ -16,11 +16,25 @@ import javax.persistence.JoinColumn;
 import javax.persistence.JoinTable;
 import javax.persistence.ManyToMany;
 import javax.persistence.ManyToOne;
+import javax.persistence.NamedQueries;
+import javax.persistence.NamedQuery;
 import javax.persistence.Table;
+import org.springframework.data.annotation.Transient;
+
 
 @Entity // declares the class as entity, to be managed by JPA
 @Table(name="JPA_Employees") // declares the table name associated with this class
 @EntityListeners({EmployeeListener.class})//call the appropriate listener event method on lifecycle event 
+@NamedQueries({
+	@NamedQuery(name="Employee.findBySalary",//declare the query name as the method in DAO
+			query="select e from Employee e where e.salary between :minSalary and :maxSalary")
+			//identify the query to fetch employee objects with properties and parameters
+			//all the params are to be declared using @Param("<name>") in the DAO interface
+	,
+	@NamedQuery(name="Employee.findByDesignation",
+				query="select e from Employee e where e.designation= :designation")
+		//identify query method in DAO and pass the necessary params
+})
 public class Employee {
 	
 	int empno; 
@@ -34,6 +48,7 @@ public class Employee {
 	
 	@ManyToOne//one Employee is asscociated with one of the many Departments 
 	@JoinColumn(name="Fk_department_number")// the foreign key column to store the associate deptno
+	@Transient//ignore this property when storing employee data in MongoDB
 	public Department getCurrentDepartment() {
 		return currentDepartment;
 	}
@@ -47,8 +62,10 @@ public class Employee {
 	@ManyToMany(cascade=CascadeType.ALL)//configure many to many association for entities 
 	@JoinTable(name="JPA_PROJECT_ASSIGNMENTS",//provide the join table name 
 				joinColumns= {@JoinColumn(name="fk_empno")},//foreign key column for current class
-				inverseJoinColumns= {@JoinColumn(name="fk_projectId")}//foreign key column for collection 
+				inverseJoinColumns= {@JoinColumn(name="fk_projectId")}//foreign key column for collection
 	)
+	@Transient//ignore this property when stroing employee data in MongoDB
+	
 	public Set<Project> getProjectsAssigned() {
 		return projectsAssigned;
 	}

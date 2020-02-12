@@ -8,15 +8,24 @@ import org.springframework.boot.test.context.SpringBootTest;
 
 import com.mastek.hrapp.dao.DepartmemtJPADAO;
 import com.mastek.hrapp.dao.EmployeeJPADAO;
+import com.mastek.hrapp.dao.JobPositionsDAO;
+import com.mastek.hrapp.dao.PaymentJPADAO;
 import com.mastek.hrapp.dao.ProjectJPADAO;
+import com.mastek.hrapp.entities.CardPayment;
+import com.mastek.hrapp.entities.ChequePayment;
 import com.mastek.hrapp.entities.Department;
 import com.mastek.hrapp.entities.Designation;
 import com.mastek.hrapp.entities.Employee;
+import com.mastek.hrapp.entities.JobPosition;
+import com.mastek.hrapp.entities.Payement;
 import com.mastek.hrapp.entities.Project;
 import com.mastek.hrapp.services.EmployeeService;
 
 @SpringBootTest // do not give space between annotation and target
 class HrappApplicationTests {
+	
+	@Autowired
+	JobPositionsDAO jobDAO;
 	
 	@Autowired//Spring will provide the object using IOC, dependency Injection technique
 	EmployeeService empSvc;
@@ -33,6 +42,68 @@ class HrappApplicationTests {
 	@Autowired
 	ProjectJPADAO projectDAO;
 
+	@Autowired
+	PaymentJPADAO paymentDAO;
+	
+	@Test
+	void testFindEmployeesBySalary(){
+		double minSalary=100.0;
+		double maxSalary=5000.0;
+								//empDAO.findBySalary(minSalary,maxSalry)
+		Iterable<Employee> emps= empDAO.findBySalary(minSalary,maxSalary);
+		
+		System.out.println("All Employees having salary between min:"+minSalary+ 
+				"and max:"+maxSalary);
+		
+		for (Employee employee : emps) {
+			System.out.println(employee);
+		}
+		
+	}
+	@Test
+	void testFindEmployeesByDesignation() {
+		Iterable<Employee> emps = empDAO.findByDesignation(Designation.MANAGER);
+		System.out.println("All Employees with Designation as "+Designation.MANAGER);
+		
+		for (Employee employee : emps) {
+			System.out.println(employee);
+			
+		}
+		
+	}
+	@Test
+	void testCashPaymentAdd() {
+		Payement cashP = new Payement();
+		cashP.setAmount(100);
+		
+		cashP= paymentDAO.save(cashP);
+		
+		System.out.println(cashP);
+		assertNotNull(cashP,"Cash Payment Not Saved");
+	}
+	@Test
+	void testCardPaymentAdd() {
+		CardPayment cardP = new CardPayment();
+		cardP.setAmount(2300);
+		cardP.setCardNumber(1123456809);
+		cardP.setCardService("VISA");
+		
+		cardP = paymentDAO.save(cardP);
+		System.out.println(cardP);
+		assertNotNull(cardP,"Card Payment not saved");
+		
+	}
+	@Test
+	void testChequePaymentAdd() {
+		ChequePayment cheqP = new ChequePayment();
+		cheqP.setAmount(444);
+		cheqP.setBankName("RBS");
+		cheqP.setChequeNumber(12345);
+		
+		cheqP = paymentDAO.save(cheqP);
+		System.out.println(cheqP);
+		assertNotNull(cheqP,"Cheque Payament not saved");
+	}
 	@Test
 	void testEmployeeExampleMethod() {
 		empSvc.exampleMethod();
@@ -74,7 +145,7 @@ class HrappApplicationTests {
 	@Test
 	void testDeleteEmployeeId() {
 		//empDAO.delete(emp); deletes by object
-		empDAO.deleteById(5);//deletes by ID
+		//empDAO.deleteById(5);//deletes by ID
 		
 	}
 	@Test
@@ -107,6 +178,39 @@ class HrappApplicationTests {
 	    void testAssignEmployeeToProject(){
 	    	Employee emp= empSvc.assignEmployeeToProject(11,26);
 	    			assertTrue(emp.getProjectsAssigned().size()>0,"Projects assigned");
+	    }
+	    @Test
+	    void testAddJobPositionDocument() {
+	    	JobPosition jp = new JobPosition();
+	    	jp.setJobId(135);
+	    	jp.setLocation("LEEDS");
+	    	jp.setClientName("NHS");
+	    	jp.setSkillsRequired("Java");
+	    	jp.setNumberOfPositions(3);
+	    	
+	    	jp = jobDAO.save(jp);
+	    	
+	    	assertNotNull(jp, "Job Positions Not Saved");
+	    }
+	    @Test
+	    void testListAllJobPositions() {
+	    	System.out.println("Print All Job Positions");
+	    	for (JobPosition jp : jobDAO.findAll()) {
+	    		System.out.println(jp);
+	    	}
+	    
+	    }	
+	    @Test
+	    void testApplyForJobPosition() {
+	    	int jobId=122;
+	    	int empno = 2;
+	    	JobPosition jp = empSvc.applyForJobPosition(122, 6);
+	    	
+	    	assertNotNull (jp, "Job not Applied");
+	    	
+	    	for (Employee applicant : jp.getGetApplicants()) {
+	    		System.out.println(applicant);
+	    	}
 	    }
 }
 	   

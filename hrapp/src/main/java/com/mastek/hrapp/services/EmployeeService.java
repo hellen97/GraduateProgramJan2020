@@ -11,9 +11,11 @@ import org.springframework.stereotype.Component;
 
 import com.mastek.hrapp.dao.DepartmemtJPADAO;
 import com.mastek.hrapp.dao.EmployeeJPADAO;
+import com.mastek.hrapp.dao.JobPositionsDAO;
 import com.mastek.hrapp.dao.ProjectJPADAO;
 import com.mastek.hrapp.entities.Department;
 import com.mastek.hrapp.entities.Employee;
+import com.mastek.hrapp.entities.JobPosition;
 import com.mastek.hrapp.entities.Project;
 
 	@Component // do not give space between annotation and target
@@ -30,6 +32,9 @@ import com.mastek.hrapp.entities.Project;
 		
 		@Autowired
 		ProjectJPADAO projectDAO;
+		
+		@Autowired
+		JobPositionsDAO jobsDAO;
 
 	
 		public EmployeeService() {
@@ -84,5 +89,16 @@ import com.mastek.hrapp.entities.Project;
 		empDAO.save(emp);
 		
 		return emp;
+	}
+	
+	public JobPosition applyForJobPosition(int JobId, int empno) {
+		JobPosition job = jobsDAO.findById(JobId).get();
+		Employee emp = empDAO.findById(empno).get();
+				
+				job.getGetApplicants().add(emp);
+		
+				job = jobsDAO.save(job);
+				return job;
+		
 	}
 }
